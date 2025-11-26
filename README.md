@@ -2,6 +2,31 @@
 
 A sophisticated multi-agent system built with Google ADK (Agent Development Kit) that helps plan complete trips including flights, hotels, and daily itineraries.
 
+## ⚠️ IMPORTANT: Date Requirements
+
+**The Amadeus Test API only accepts FUTURE dates!**
+
+- Current date: November 26, 2025
+- ✅ Valid dates: 2026-01-01 and later
+- ❌ Invalid dates: Any date before November 26, 2025
+
+**Common Error**: If you see `400 Bad Request` errors for flights or hotels, it usually means:
+1. The date is in the past
+2. The IATA code is invalid
+3. No availability for that route/destination
+
+## 🚀 Quick Start with UI
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Run the Streamlit UI
+venv/bin/python -m streamlit run app.py
+```
+
+Then open `http://localhost:8501` and fill in your trip details with **future dates**!
+
 ## Features
 
 - **Multi-Agent Architecture**: Specialized agents for flights, hotels, and itinerary planning

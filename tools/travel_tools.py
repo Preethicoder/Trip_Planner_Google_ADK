@@ -6,9 +6,13 @@ from typing import List, Dict, Any, Optional
 import requests
 import os
 import random
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # --- Amadeus API Configuration ---
-# NOTE: It is best practice to load these from environment variables (.env file)
+# NOTE: These are loaded from environment variables (.env file)
 API_KEY = os.getenv("AMADEUS_API_KEY", "YOUR_API_KEY_HERE")
 API_SECRET = os.getenv("AMADEUS_API_SECRET", "YOUR_API_SECRET_HERE")
 
@@ -159,7 +163,7 @@ class HotelSearchTool(BaseTool):
             print(f"❌ Amadeus Hotel List Error: {e}")
             return []
 
-    def _get_hotel_offers(self, hotel_ids: List[str], check_in: str, check_out: str, adults: int = 1) -> HotelSearchResult:
+    def _get_hotel_offers(self, hotel_ids: List[str], check_in: str, check_out: str, adults: int) -> HotelSearchResult:
         """Step 2: Get real-time offers for the found hotel IDs."""
         print(f"🏨 Step 2: Searching offers for {len(hotel_ids)} hotels...")
         
@@ -216,7 +220,7 @@ class HotelSearchTool(BaseTool):
             print(f"❌ Amadeus Hotel Search Error: Failed to get offers. Details: {e}")
             return HotelSearchResult(options=[])
 
-    def run(self, cityCode: str, check_in: str, check_out: str, max_budget: float) -> HotelSearchResult:
+    def run(self, cityCode: str, check_in: str, check_out: str, max_budget: float, adults: int = 2) -> HotelSearchResult:
         """The main entry point for the Hotel Search Tool, orchestrating the two API calls."""
         
         # 1. Get Hotel IDs
@@ -226,7 +230,8 @@ class HotelSearchTool(BaseTool):
         results = self._get_hotel_offers(
             hotel_ids=hotel_ids, 
             check_in=check_in, 
-            check_out=check_out
+            check_out=check_out,
+            adults=adults
         )
         
         # 3. Filter results based on max_budget (optional cleanup/business logic)
@@ -243,9 +248,7 @@ class ItineraryTool(BaseTool):
     Tool to gather itinerary data from the internet (via Google Search)
     and structure it into a daily plan.
     """
-    # The agent calls run(), but the actual search and synthesis is done 
-    # by the LLM agent that has access to this tool AND the Google Search tool.
-    def run(self, city: str, trip_length_days: int) -> ItineraryPlanResult:
+    def run(self, city: str, trip_length_days: int) -> str:
         """
         Signals the LLM Agent to search for itinerary ideas for the specified city and duration.
 
@@ -254,13 +257,12 @@ class ItineraryTool(BaseTool):
             trip_length_days: The number of days for the trip.
 
         Returns:
-            A structured ItineraryPlanResult object (handled by the LLM's synthesis).
+            A message instructing the agent to search and structure the results.
         """
         print(f"🗺️ Tool Executing: Signaling Agent to search for a {trip_length_days}-day itinerary for {city} using Google Search.")
-        # This function primarily serves to define the tool's signature and output schema.
-        # The LLM Agent will interpret this call as: 
-        # "I must search for the itinerary and format the search results as ItineraryPlanResult."
-        return f"Please search Google for a comprehensive {trip_length_days}-day itinerary for {city} and structure the results."
+        # This function signals that the LLM should use google_search to find itinerary information
+        # and then structure it according to the ItineraryPlanResult schema
+        return f"Search Google for a comprehensive {trip_length_days}-day itinerary for {city}, including top attractions, activities, and dining recommendations. Structure the results as a day-by-day plan."
 
 # Initialize the tool
 ITINERARY_TOOL = ItineraryTool(name="itinerary_generator", description="Generate a day-by-day itinerary plan for a trip")

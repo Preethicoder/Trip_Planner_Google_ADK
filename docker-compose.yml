@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  tripplanner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tripplanner-app
+    ports:
+      - "8501:8501"
+    environment:
+      # Pass environment variables from host
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - AMADEUS_API_KEY=${AMADEUS_API_KEY}
+      - AMADEUS_API_SECRET=${AMADEUS_API_SECRET}
+    env_file:
+      - .env  # Load from .env file
+    volumes:
+      # Mount source code for development (optional - remove for production)
+      - ./app.py:/app/app.py
+      - ./agents:/app/agents
+      - ./tools:/app/tools
+    restart: unless-stopped
+    networks:
+      - tripplanner-network
+
+networks:
+  tripplanner-network:
+    driver: bridge
